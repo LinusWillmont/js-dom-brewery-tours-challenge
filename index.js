@@ -2,7 +2,11 @@ const state = {
 	breweries: [],
 	stateFilter: "",
 	typeFilter: "",
+	nameFilter: "",
 };
+
+// SELECTED ROOT ELEMETNS
+const breweriesList = document.getElementById("breweries-list");
 
 const BreweryTypes = {
 	Micro: "micro",
@@ -30,7 +34,6 @@ function setupStateFilter() {
 		state.stateFilter = formatStateInput(selectState.value);
 
 		getBreweriesByState();
-		console.log(state);
 	});
 }
 
@@ -116,10 +119,22 @@ function filterByType(breweries) {
 	return filteredBreweries;
 }
 
+function filterByName(breweries) {
+	if (state.nameFilter === "") {
+		return breweries;
+	}
+
+	let filteredBreweries = [];
+
+	filteredBreweries = breweries.filter((brewery) =>
+		brewery.name.toLowerCase().includes(state.nameFilter.toLowerCase())
+	);
+
+	return filteredBreweries;
+}
+
 function renderBreweries() {
 	clearListOfBreweries();
-
-	const breweriesList = document.getElementById("breweries-list");
 
 	let filteredBreweries = [];
 
@@ -131,14 +146,43 @@ function renderBreweries() {
 	);
 
 	filteredBreweries = filterByType(filteredBreweries);
+	filteredBreweries = filterByName(filteredBreweries);
 
 	filteredBreweries.forEach((brewery) => {
 		breweriesList.appendChild(createBreweryInfo(brewery));
 	});
 }
 
+function renderSearchByName() {
+	const header = document.createElement("header");
+	const form = document.createElement("form");
+	const label = document.createElement("label");
+	const labelText = document.createElement("h2");
+	const input = document.createElement("input");
+
+	header.classList.add("search-bar");
+	form.setAttribute("id", "search-breweries-form");
+	form.setAttribute("autocomplete", "off");
+
+	labelText.textContent = "Search breweries:";
+
+	input.setAttribute("id", "search-breweries");
+	input.name = "search-breweries";
+	input.type = "text";
+	input.addEventListener("input", (event) => {
+		state.nameFilter = event.target.value;
+		renderBreweries();
+	});
+
+	header.appendChild(form);
+	label.appendChild(labelText);
+	form.appendChild(label);
+	form.appendChild(input);
+	const article = document.querySelector("article");
+	article.prepend(header);
+}
+
 function clearListOfBreweries() {
-	const breweriesList = document.getElementById("breweries-list");
 	breweriesList.innerHTML = "";
 }
 
@@ -156,6 +200,7 @@ function getBreweriesByState() {
 
 function main() {
 	setupEventListeners();
+	renderSearchByName();
 }
 
 main();
